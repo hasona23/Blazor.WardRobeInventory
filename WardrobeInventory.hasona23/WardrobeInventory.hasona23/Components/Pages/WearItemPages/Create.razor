@@ -1,0 +1,63 @@
+﻿@page "/wearitems/create"
+@using Microsoft.EntityFrameworkCore
+@using WardrobeInventory.hasona23.Models
+@inject IDbContextFactory<Data.WardrobeDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject ILogger<Create> logger;
+@rendermode InteractiveServer
+
+<PageTitle>Create</PageTitle>
+
+<h1>Create</h1>
+
+<h2>WearItem</h2>
+<hr/>
+<div class="row">
+    <div class="col-md-4">
+        <EditForm method="post" Model="WearItem" OnValidSubmit="AddWearItem" FormName="create" Enhance>
+            <DataAnnotationsValidator/>
+            <ValidationSummary class="text-danger" role="alert"/>
+            <div class="mb-3">
+                <label for="name" class="form-label">Name:</label>
+                <InputText id="name" @bind-Value="WearItem.Name" class="form-control"/>
+                <ValidationMessage For="() => WearItem.Name" class="text-danger"/>
+            </div>
+            <!--div class="mb-3">
+            <label for="imageurl" class="form-label">ImageUrl:</label> 
+            <InputText id="imageurl" @bind-Value="WearItem.ImageUrl" class="form-control" /> 
+            <ValidationMessage For="() => WearItem.ImageUrl" class="text-danger" /> 
+            </div>-->
+
+            <div class="mb-3">
+                <label for="size" class="form-label">Size:</label>
+                <InputNumber id="size" @bind-Value="WearItem.Size" class="form-control"/>
+                <ValidationMessage For="() => WearItem.Size" class="text-danger"/>
+            </div>
+            <FileColorPicker WearItem="WearItem"></FileColorPicker>
+
+            <button type="submit" class="btn btn-primary">Create</button>
+        </EditForm>
+    </div>
+</div>
+<div>
+    <a href="/wearitems">Back to List</a>
+
+</div>
+
+@code {
+    [SupplyParameterFromForm] private WearItem WearItem { get; set; } = new();
+   
+
+     
+    
+    // To protect from overposting attacks, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+
+    private async Task AddWearItem()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.WearItem.Add(WearItem);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/wearitems");
+    }
+
+}

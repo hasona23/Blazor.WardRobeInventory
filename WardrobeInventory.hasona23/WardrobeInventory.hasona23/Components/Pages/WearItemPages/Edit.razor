@@ -1,0 +1,100 @@
+﻿@page "/wearitems/edit"
+@using Microsoft.EntityFrameworkCore
+@using WardrobeInventory.hasona23.Models
+@inject IDbContextFactory<Data.WardrobeDbContext> DbFactory
+@inject NavigationManager NavigationManager
+@inject ILogger<Edit> logger
+@rendermode InteractiveServer
+ <PageTitle>Edit</PageTitle>
+
+<h1>Edit</h1>
+
+<h2>WearItem</h2>
+<hr />
+@if (WearItem is null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm method="post" Model="WearItem" OnValidSubmit="UpdateWearItem" FormName="edit" Enhance>
+                <DataAnnotationsValidator />
+                <ValidationSummary role="alert"/>
+                <input type="hidden" name="WearItem.Id" value="@WearItem.Id" />
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <InputText id="name" @bind-Value="WearItem.Name" class="form-control" />
+                    <ValidationMessage For="() => WearItem.Name" class="text-danger" />
+                </div>
+               
+                <div class="mb-3">
+                    <label for="size" class="form-label">Size:</label>
+                    <InputNumber id="size" @bind-Value="WearItem.Size" class="form-control" />
+                    <ValidationMessage For="() => WearItem.Size" class="text-danger" />
+                </div>
+               
+                <FileColorPicker WearItem="WearItem"></FileColorPicker>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </EditForm>
+        </div>
+    </div>
+}
+
+<div>
+    <a href="/wearitems">Back to List</a>
+</div>
+
+@code {
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private WearItem? WearItem { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        WearItem ??= await context.WearItem.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (WearItem is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    // To protect from overposting attacks, enable the specific properties you want to bind to.
+    // For more information, see https://learn.microsoft.com/aspnet/core/blazor/forms/#mitigate-overposting-attacks.
+    private async Task UpdateWearItem()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.Attach(WearItem!).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!WearItemExists(WearItem!.Id))
+            {
+                NavigationManager.NavigateTo("notfound");
+            }
+            else
+            {
+                throw;
+            }
+        }
+
+        NavigationManager.NavigateTo("/wearitems");
+    }
+
+    private bool WearItemExists(int id)
+    {
+        using var context = DbFactory.CreateDbContext();
+        return context.WearItem.Any(e => e.Id == id);
+    }
+    
+
+}

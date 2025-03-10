@@ -1,0 +1,66 @@
+﻿@rendermode InteractiveServer
+@using WardrobeInventory.hasona23.Models
+
+<div class="mb-3">
+    <!--<label for="color" class="form-label">Color:</label>
+    <InputText id="color" @bind-Value="WearItem.Color" class="form-control"/>
+    <ValidationMessage For="() => WearItem.Color" class="text-danger"/>-->
+    <input type="color" id="head" name="head" value="@WearItem.Color" @onchange="@UpdateColor">
+    <label for="head">@WearItem.Color</label>
+</div>
+
+<div class="mb-3">
+    <p>1MB FILE</p>
+    <InputFile OnChange="OnFileChanged"></InputFile>
+    @if (!string.IsNullOrEmpty(WearItem.ImageUrl))
+    {
+        <img src="@WearItem.ImageUrl" style="max-width: 200px;max-height: 200px"/>
+
+    }
+    <hr/>
+</div>
+<div class="mb-3">
+<p style="color: red">@msg</p>
+</div>
+@code {
+    [Parameter] public WearItem WearItem { get; set; } = new();
+
+    string msg = "";
+    void UpdateColor(ChangeEventArgs args)
+    {
+        WearItem.Color = args?.Value.ToString();
+    }
+    async Task OnFileChanged(InputFileChangeEventArgs args)
+    {
+        var fileFormat = "Image/png";
+        var imageFile = await args.File.RequestImageFileAsync(fileFormat, 1920, 1080);
+        
+        const int maxFileSize =  1024 * 1024 *5; //5MB 
+        if (imageFile != null)
+        {
+            
+            
+                try
+                {
+                    await using var stream = imageFile.OpenReadStream(maxFileSize);
+                    // Use using statement and read asynchronously
+                    var buffer = new byte[imageFile.Size];
+                    await stream.ReadExactlyAsync(buffer, 0, buffer.Length);
+                    WearItem.ImageUrl = $"data:{fileFormat};base64,{Convert.ToBase64String(buffer)}";
+
+                }
+                catch (Exception exception)
+                {
+                    
+                        msg = "Error: "+exception.Message;
+                    
+                }
+            
+        }
+        else
+        {
+            msg = "No Image";
+        }
+       
+    }
+}

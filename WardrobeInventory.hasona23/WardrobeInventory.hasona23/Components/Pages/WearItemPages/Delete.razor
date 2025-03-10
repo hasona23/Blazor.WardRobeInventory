@@ -1,0 +1,67 @@
+﻿@page "/wearitems/delete"
+@using Microsoft.EntityFrameworkCore
+@using WardrobeInventory.hasona23.Models
+@inject IDbContextFactory<WardrobeInventory.hasona23.Data.WardrobeDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Delete</PageTitle>
+
+<h1>Delete</h1>
+
+<p>Are you sure you want to delete this?</p>
+<div>
+    <h2>WearItem</h2>
+    <hr />
+    @if (wearitem is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Name</dt>
+            <dd class="col-sm-10">@wearitem.Name</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">ImageUrl</dt>
+            <dd class="col-sm-10">@wearitem.ImageUrl</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Size</dt>
+            <dd class="col-sm-10">@wearitem.Size</dd>
+        </dl>
+        <dl class="row">
+            <dt class="col-sm-2">Color</dt>
+            <dd class="col-sm-10">@wearitem.Color</dd>
+        </dl>
+        <EditForm method="post" Model="wearitem" OnValidSubmit="DeleteWearItem" FormName="delete" Enhance>
+            <button type="submit" class="btn btn-danger" disabled="@(wearitem is null)">Delete</button> |
+            <a href="/wearitems">Back to List</a>
+        </EditForm>
+    }
+</div>
+
+@code {
+    private WearItem? wearitem;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        wearitem = await context.WearItem.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (wearitem is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+
+    private async Task DeleteWearItem()
+    {
+        using var context = DbFactory.CreateDbContext();
+        context.WearItem.Remove(wearitem!);
+        await context.SaveChangesAsync();
+        NavigationManager.NavigateTo("/wearitems");
+    }
+}

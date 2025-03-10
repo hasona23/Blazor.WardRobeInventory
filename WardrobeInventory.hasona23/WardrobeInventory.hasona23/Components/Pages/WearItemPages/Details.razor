@@ -1,0 +1,52 @@
+﻿@page "/wearitems/details"
+@using Microsoft.EntityFrameworkCore
+@using WardrobeInventory.hasona23.Models
+@inject IDbContextFactory<WardrobeInventory.hasona23.Data.WardrobeDbContext> DbFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Details</PageTitle>
+
+<h1>Details</h1>
+
+<div>
+    <h2>WearItem</h2>
+    <hr />
+    @if (wearitem is null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    else {
+        <dl class="row">
+            <dt class="col-sm-2">Name</dt>
+            <dd class="col-sm-10">@wearitem.Name</dd>
+            <dt class="col-sm-2">ImageUrl</dt>
+            <dd class="col-sm-10">@wearitem.ImageUrl</dd>
+            <dt class="col-sm-2">Size</dt>
+            <dd class="col-sm-10">@wearitem.Size</dd>
+            <dt class="col-sm-2">Color</dt>
+            <dd class="col-sm-10">@wearitem.Color</dd>
+        </dl>
+        <div>
+            <a href="@($"/wearitems/edit?id={wearitem.Id}")">Edit</a> |
+            <a href="@($"/wearitems")">Back to List</a>
+        </div>
+    }
+</div>
+
+@code {
+    private WearItem? wearitem;
+
+    [SupplyParameterFromQuery]
+    private int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        using var context = DbFactory.CreateDbContext();
+        wearitem = await context.WearItem.FirstOrDefaultAsync(m => m.Id == Id);
+
+        if (wearitem is null)
+        {
+            NavigationManager.NavigateTo("notfound");
+        }
+    }
+}

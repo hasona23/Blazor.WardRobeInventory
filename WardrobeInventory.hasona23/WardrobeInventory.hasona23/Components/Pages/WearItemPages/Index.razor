@@ -1,0 +1,60 @@
+﻿@page "/wearitems"
+@using Microsoft.EntityFrameworkCore
+@using WardrobeInventory.hasona23.Data
+@inject IDbContextFactory<WardrobeDbContext> DbFactory
+@implements IAsyncDisposable
+
+<PageTitle>Index</PageTitle>
+
+<h1>Index</h1>
+
+<p>
+    <a href="wearitems/create">Create New</a>
+</p>
+<div class="d-flex flex-wrap">
+    @if (_context == null)
+    {
+        <p>Loading...</p>
+    }
+    else
+    {
+        @foreach (var wearItem in _context.WearItem)
+        {
+            <div class="card" style="width: 18rem; margin: 5px;">
+                <img loading="lazy" src="@wearItem.ImageUrl" class="card-img-top" alt="Image"
+                     style="height: 200px; object-fit: cover; background-color: gray;">
+                <div class="card-body" style="height: 100px;">
+                    <div class="d-flex align-self-center justify-content-center">
+                        <h5 class="card-title">
+                            @wearItem.Name - @wearItem.Size
+                        </h5>
+                    </div>
+                </div>
+                <div class="card-footer d-grid" style="place-items: center; background-color: @wearItem.Color;">
+                    <span>
+                        <a href="@($"wearitems/edit?id={wearItem.Id}")">Edit</a> |
+                        <a href="@($"wearitems/details?id={wearItem.Id}")">Details</a> |
+                        <a href="@($"wearitems/delete?id={wearItem.Id}")">Delete</a>
+                    </span>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+
+
+@code {
+    WardrobeDbContext _context = null;
+    protected override async Task OnInitializedAsync()
+    {
+        _context = await DbFactory.CreateDbContextAsync();
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        await _context.DisposeAsync();
+    }
+
+}
+
